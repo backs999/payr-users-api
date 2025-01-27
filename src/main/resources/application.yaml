@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: payr-users-api
+
+payr:
+  kafka:
+    topic: users.registered

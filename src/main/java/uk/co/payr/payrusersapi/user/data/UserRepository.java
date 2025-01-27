@@ -1,9 +1,13 @@
-package uk.co.payr.payrordersapi.order.data;
+package uk.co.payr.payrusersapi.user.data;
 
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
-import uk.co.payr.payrordersapi.order.model.Order;
+import uk.co.payr.payrusersapi.user.model.User;
 
-public interface OrderRepository extends CrudRepository
-        <Order, String>, PagingAndSortingRepository<Order, String> {
+import java.util.Optional;
+
+public interface UserRepository extends CrudRepository
+        <User, String>, PagingAndSortingRepository<User, String> {
+
+    Optional<User> findByEmail(final String email);
 }

@@ -1,4 +1,4 @@
-package uk.co.payr.payrusersapi.user.service;
+package uk.co.payr.payrusersapi.user.service.event;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,7 +20,7 @@ public class EventServiceImpl implements  EventService {
     private final KafkaConfigProps kafkaConfigProps;
 
     @Override
-    public void sendNotificationNewUser(NotificationNewEvent notificationNewUserEvent) {
+    public void sendNotification(NotificationNewEvent notificationNewUserEvent) {
         try {
             kafkaTemplate.send(kafkaConfigProps.getTopicNotificationNew(), mapper.writeValueAsString(notificationNewUserEvent));
         } catch (JsonProcessingException e) {

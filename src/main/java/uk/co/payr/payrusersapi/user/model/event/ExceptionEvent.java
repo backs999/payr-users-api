@@ -1,4 +1,4 @@
-package uk.co.payr.payrexceptionapi.exception.model.event;
+package uk.co.payr.payrusersapi.user.model.event;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

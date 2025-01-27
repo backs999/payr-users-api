@@ -4,36 +4,48 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.flogger.Flogger;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.springframework.kafka.annotation.DltHandler;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.annotation.RetryableTopic;
+import org.springframework.retry.annotation.Backoff;
 import org.springframework.stereotype.Component;
-import uk.co.payr.payrusersapi.user.model.User;
-import uk.co.payr.payrusersapi.user.model.event.NewOrder;
-import uk.co.payr.payrusersapi.user.service.UserService;
-
-import java.util.Set;
+import uk.co.payr.payrusersapi.user.model.event.ExceptionEvent;
+import uk.co.payr.payrusersapi.user.model.event.UserUpdateEvent;
+import uk.co.payr.payrusersapi.user.service.event.EventService;
+import uk.co.payr.payrusersapi.user.service.user.UserUpdateService;
+import uk.co.payr.payrusersapi.user.util.DateUtils;
 
 @Component
 @RequiredArgsConstructor
 @Flogger
-public class OrderListener {
+public class UserUpdateListener {
 
     private final ObjectMapper mapper;
-    private final UserService userService;
+    private final UserUpdateService userUpdateService;
+    private final EventService eventService;
 
-    @KafkaListener(topics = "${payr.kafka.topic-orders-new}", groupId = "payr-users-api")
-    public void listens(final String incomingOrder) {
+    @RetryableTopic(attempts = "5", backoff = @Backoff(delay = 5000))
+    @KafkaListener(topics = "${payr.kafka.topic-update-user}", groupId = "payr-users-api")
+    public void listens(final String updateUser) {
         try {
-            final var newOrder = mapper.readValue(incomingOrder, NewOrder.class);
-log.atInfo().log("Order received for user: " + newOrder.getUserId());
-        final var user = userService.getUserById(newOrder.getUserId()).orElseGet(() -> {
-            return userService.register(User.builder().build());
-        });
-        log.atInfo().log("Adding order " + newOrder.getOrderId() + " to user: " + newOrder.getUserId());
-        user.getOrderIds().add(newOrder.getOrderId());
-        userService.register(user);
-        log.atInfo().log("User updated in the database");
+            final var update = mapper.readValue(updateUser, UserUpdateEvent.class);
+            log.atInfo().log("User update received: " + update.getUserId());
+            userUpdateService.externalUserUpdate(update);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @DltHandler
+    public void handleDlt(ConsumerRecord<String, String> record, Exception exception) {
+        log.atSevere().log("Failed to process order after retries: {}", record.value());
+        log.atSevere().log("Exception: ", exception);
+        eventService.sendException(ExceptionEvent.builder()
+                        .exception(exception.getMessage())
+                        .timestamp(DateUtils.nowAsString())
+                        .service("payr-users-api")
+                        .message("Could not update the user with ID " + record.value())
+                .build());
     }
 }

@@ -1,15 +1,17 @@
-package uk.co.payr.payrusersapi.user.service;
+package uk.co.payr.payrusersapi.user.service.user;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.flogger.Flogger;
-import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import uk.co.payr.payrusersapi.user.data.UserRepository;
+import uk.co.payr.payrusersapi.user.exception.UserApiException;
 import uk.co.payr.payrusersapi.user.model.User;
 import uk.co.payr.payrusersapi.user.model.event.EmailNewUserEvent;
 import uk.co.payr.payrusersapi.user.model.event.NotificationNewEvent;
 import uk.co.payr.payrusersapi.user.model.http.UserRequest;
 import uk.co.payr.payrusersapi.user.service.encryption.PasswordEncryptionService;
+import uk.co.payr.payrusersapi.user.service.event.EventService;
 import uk.co.payr.payrusersapi.user.util.DateUtils;
 import uk.co.payr.payrusersapi.user.util.RandomUtils;
 
@@ -47,7 +49,7 @@ public class UserServiceImpl implements UserService {
                 .accountActiviationCode(RandomUtils.generateRandomAlphanumeric(10))
                                                                                                 .build();
         var saved = userRepository.save(user);
-        eventService.sendNotificationNewUser(NotificationNewEvent.builder()
+        eventService.sendNotification(NotificationNewEvent.builder()
                 .service("payr-users-api")
                 .timestamp(DateUtils.nowAsString())
                 .message("User with ID [" + saved.getId() + "] has been created")
@@ -61,12 +63,12 @@ public class UserServiceImpl implements UserService {
     public User completeRegistration(String email, String code) {
         log.atInfo().log("Completing registration for email " + email + " with code " + code);
         final var user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User with email " + email + " not found"));
-        if (user.getAccountActiviationCode().equals(code)) {
+                .orElseThrow(() -> new UserApiException("User with email " + email + " not found", 404));
+        if (StringUtils.equals(user.getAccountActiviationCode(), code)) {
             user.setVerified(true);
             user.setAccountActiviationCode(null);
             var saved = userRepository.save(user);
-            eventService.sendNotificationNewUser(NotificationNewEvent.builder()
+            eventService.sendNotification(NotificationNewEvent.builder()
                     .service("payr-users-api")
                     .timestamp(DateUtils.nowAsString())
                     .message("User with ID [" + saved.getId() + "] has been verified")

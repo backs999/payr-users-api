@@ -1,4 +1,4 @@
-package uk.co.payr.payrusersapi.user.service;
+package uk.co.payr.payrusersapi.user.service.user;
 
 import uk.co.payr.payrusersapi.user.model.User;
 import uk.co.payr.payrusersapi.user.model.http.UserRequest;

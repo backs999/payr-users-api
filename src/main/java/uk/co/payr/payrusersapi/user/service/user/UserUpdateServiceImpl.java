@@ -1,4 +1,4 @@
-package uk.co.payr.payrusersapi.user.service;
+package uk.co.payr.payrusersapi.user.service.user;
 
 import lombok.AllArgsConstructor;
 import lombok.NonNull;

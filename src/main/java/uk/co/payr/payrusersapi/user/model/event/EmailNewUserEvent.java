@@ -9,8 +9,6 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class NotificationNewUserEvent {
-    private String timestamp;
-    private String message;
-    private String service;
+public class EmailNewUserEvent {
+    private String userId;
 }

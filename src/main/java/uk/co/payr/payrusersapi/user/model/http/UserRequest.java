@@ -15,12 +15,8 @@ import java.util.Set;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
-@Table(name = "users")
 public class UserRequest {
 
-    @Id @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
     @NotEmpty
     private String name;
     @Column(unique = true)
@@ -29,13 +25,4 @@ public class UserRequest {
     @NotEmpty
     @Size(min = 8, max = 16)
     private String password;
-    private String registeredAt;
-    private String lastLoginAt;
-    private String registrationEmailSentAt;
-    private boolean active;
-    private boolean deleted;
-    private boolean blocked;
-    private boolean verified;
-    @ElementCollection
-    private Set<String> orderIds;
 }

@@ -1,7 +1,8 @@
 package uk.co.payr.payrusersapi.user.exception;
 
-public class CustomException extends RuntimeException {
-    public CustomException(String message) {
-        super(message);
+public class UserApiException extends AbstractException {
+
+    public UserApiException(String message, int httpExceptionCode) {
+        super(message, httpExceptionCode);
     }
 }

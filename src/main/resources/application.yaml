@@ -1,7 +1,14 @@
 spring:
   application:
     name: payr-users-api
+  kafka:
+    bootstrap-servers: 'broker:29092'
 
 payr:
   kafka:
-    topic: users.registered
+    topic-orders-new: orders.new
+    topic-orders-error: orders.error
+    topic-notification-new: notification.new
+    topic-update-user: user.update
+    topic-email-register: email.register
+    topic-exception: exception.new
